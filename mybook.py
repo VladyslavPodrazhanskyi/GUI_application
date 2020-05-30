@@ -2,6 +2,69 @@ from tkinter import Tk, Button, Label, Scrollbar, Listbox, StringVar, Entry, N, 
 from tkinter import ttk
 from tkinter import messagebox
 
+#################################
+###### Connection to sqlserver database #####
+######################################
+
+from sqlserver_config import dbConfig
+import pypyodbc as pyo
+
+# connection to db
+con = pyo.connect(**dbConfig)
+# print(con)
+# create cursor object (execute sql commads in python code with db.session)
+cursor = con.cursor()
+
+# 6.1  __init__
+# при создании экземпляра класса происходит подключение к базе данных
+# и создается объект курсора на печать выводиться( "You have connected to the  database" и объект соединения к бд)
+# 6.2 метод __del__:
+# закрытие соедиения с бд
+# 6.3. метод view:
+# возвращает все записи из таблицы books
+# 6.4 метод insert:
+# добавляет запись в бд
+# 6.5. метод update
+# обновляет запись в бд
+# 6.6 метод delete:
+# удаляет запись из  бд
+
+class Bookdb():
+    def __init__(self):
+        self.con = pyo.connect(**dbConfig)
+        self.cursor = self.con.cursor() # in original = con.cursor()
+        print(self.con)
+        print("You have connected to the database")
+
+    def __del__(self):
+        self.con.close()
+
+    def view(self):
+        self.cursor.execute("SELECT * FROM books;")
+        rows = self.cursor.fetchall()
+        return rows
+
+    def insert(self, title, author, isbn):
+        sql = 'INSERT INTO books(title, author, isbn) VALUES (?, ?, ?);'
+        values = [title, author, isbn]
+        self.cursor.execute(sql, values)
+        self.con.commit()
+        # Всплывающее окно-сообщение, что добавлена новая книга
+        messagebox.showinfo(title="Book Database", message="New book added to database")
+
+    def update(self, id, title, author, isbn):
+        tsql = "UPDATE books SET title = ?, author = ?, isbn = ? WHERE id = ?"
+        self.cursor.execute(tsql, [title, author, isbn, id])
+        self.con.commit()
+        messagebox.showinfo(title="Book Database", message="Book Updated")
+
+    def delete(self, id):
+        dsql = "DELETE FROM books WHERE id = ?"
+        self.cursor.execute(dsql, [id])
+        self.con.commit()
+        messagebox.showinfo(title='Book Database', message="Book Deleted")
+
+
 # main window of the application
 root = Tk()
 
@@ -56,6 +119,23 @@ scroll.grid(row=1, column=8, rowspan=14, sticky=W)
 # 2.3 Attach scroll_bar to the list_box:
 list_box.configure(yscrollcommand=scroll.set)
 scroll.configure(command=list_box.yview)
+
+# 3. Bottom buttons ( 15 row  -  list box 1-14 rows)
+
+view_all_btn = Button(root, text='View all records', bg='black', fg='white', font='helvetica 10 bold', command="")
+view_all_btn.grid(row=15, column=1)
+
+clear_screen_btn = Button(root, text='Clear Screen', bg='dark red', fg='white', font='helvetica 10 bold', command="")
+clear_screen_btn.grid(row=15, column=2)
+
+exit_app_btn = Button(root, text='Exit application', bg='blue', fg='white', font='helvetica 10 bold', command="")
+exit_app_btn.grid(row=15, column=3)
+
+modify_rec_btn = Button(root, text='Modify record', bg='purple', fg='white', font='helvetica 10 bold', command="")
+modify_rec_btn.grid(row=15, column=4)
+
+delete_rec_btn = Button(root, text='Delete record', bg='red', fg='white', font='helvetica 10 bold', command="")
+delete_rec_btn.grid(row=15, column=5)
 
 
 # running the application
