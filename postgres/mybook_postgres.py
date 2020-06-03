@@ -1,4 +1,4 @@
-from tkinter import Tk, Button, Label, Scrollbar, Listbox, StringVar, Entry, N, S, W, E, END
+from tkinter import Tk, Button, Scrollbar, Listbox, StringVar, W, E
 from tkinter import ttk
 from tkinter import messagebox
 
@@ -6,13 +6,13 @@ from tkinter import messagebox
 ###### Connection to sqlserver database #####
 ######################################
 
-from sqlserver_config import dbConfig
-import pypyodbc as pyo
+from postgres_config import dbConfig
+import psycopg2 as pyo
 
 # connection to db
 con = pyo.connect(**dbConfig)
 # print(con)
-# create cursor object (execute sql commads in python code with db.session)
+# create cursor object (execute sql commands in python code with db.session)
 cursor = con.cursor()
 
 # 6.1  __init__
@@ -45,7 +45,7 @@ class Bookdb():
         return rows
 
     def insert(self, title, author, isbn):
-        sql = 'INSERT INTO books(title, author, isbn) VALUES (?, ?, ?);'
+        sql = 'INSERT INTO books(title, author, isbn) VALUES (%s, %s, %s);'
         values = [title, author, isbn]
         self.cursor.execute(sql, values)
         self.con.commit()
@@ -53,13 +53,13 @@ class Bookdb():
         messagebox.showinfo(title="Book Database", message="New book added to database")
 
     def update(self, id, title, author, isbn):
-        tsql = "UPDATE books SET title = ?, author = ?, isbn = ? WHERE id = ?"
+        tsql = "UPDATE books SET title = %s, author = %s, isbn = %s WHERE id = %s"
         self.cursor.execute(tsql, [title, author, isbn, id])
         self.con.commit()
         messagebox.showinfo(title="Book Database", message="Book Updated")
 
     def delete(self, id):
-        dsql = "DELETE FROM books WHERE id = ?"
+        dsql = "DELETE FROM books WHERE id = %s"
         self.cursor.execute(dsql, [id])
         self.con.commit()
         messagebox.showinfo(title='Book Database', message="Book Deleted")
@@ -82,6 +82,7 @@ def get_selected_row(event):
     author_entry.insert('end', selected_tuple[2])
     isbn_entry.delete(0, 'end')
     isbn_entry.insert('end', selected_tuple[3])
+    print(selected_tuple)
 
 
 def view_records():
@@ -97,12 +98,12 @@ def add_book():
     title_entry.delete(0, 'end')
     author_entry.delete(0, 'end')
     isbn_entry.delete(0, 'end')
-    con.commit()
+    # con.commit()
 
 
 def delete_records():
     db.delete(selected_tuple[0])
-    con.commit() # считаю, что не нужно, так как комит встроен в метод db.delete
+    # con.commit() # считаю, что не нужно, так как комит встроен в метод db.delete
 
 
 def clear_sreen():
@@ -117,7 +118,7 @@ def update_records():
     title_entry.delete(0, 'end')
     author_entry.delete(0, 'end')
     isbn_entry.delete(0, 'end')
-    con.commit()
+    # con.commit()
 
 def on_closing():
     dd = db
