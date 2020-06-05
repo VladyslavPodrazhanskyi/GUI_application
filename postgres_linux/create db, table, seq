@@ -1,0 +1,7 @@
+CREATE DATABASE mybooks;
+
+CREATE TABLE IF NOT EXISTS books (id INTEGER NOT NULL PRIMARY KEY, title VARCHAR(255), author VARCHAR(255), isbn INTEGER);
+
+CREATE SEQUENCE books_seq START 1 INCREMENT 1;
+
+ALTER TABLE books ALTER COLUMN id set default nextval('books_seq');
